@@ -79,15 +79,43 @@ class TextParser:
         return text
 
 
-def extract_words(img):
-    data = pytesseract.image_to_data(img, output_type=Output.DICT)
-    n_boxes = len(data['text'])
-    words = [{'text': data['text'][i],
-              'left': data['left'][i],
-              'top': data['top'][i],
-              'right': data['left'][i] + data['width'][i],
-              'bottom': data['top'][i] + data['height'][i]}
-             for i in range(n_boxes) if data['text'][i]]
+def extract_words(img, text_json=None):
+    """
+    text_json example:
+    {
+        "text_boxes": [
+            {
+                "id": 1,
+                "bbox": [
+                    115.20999908447266,
+                    224.22000122070312,
+                    264.5013845231798,
+                    258.04998779296875
+                ],
+                "text": "Wystawiono:"
+            },
+            ...
+        ]
+    }
+    """
+    if text_json is None:
+        data = pytesseract.image_to_data(img, output_type=Output.DICT)
+        n_boxes = len(data['text'])
+        words = [{'text': data['text'][i],
+                  'left': data['left'][i],
+                  'top': data['top'][i],
+                  'right': data['left'][i] + data['width'][i],
+                  'bottom': data['top'][i] + data['height'][i]}
+                 for i in range(n_boxes) if data['text'][i]]
+    else:
+        data = text_json.get("text_boxes", [])
+        n_boxes = len(data)
+        words = [{'text': d["text"],
+                  'left': d["bbox"][0],
+                  'top': d["bbox"][1],
+                  'right': d["bbox"][2],
+                  'bottom': d["bbox"][3]}
+                for d in data]
     return words
 
 
@@ -113,8 +141,8 @@ def divide_into_lines(words, height, width):
     return lines
 
 
-def create_ngrams(img, length=4):
-    words = extract_words(img)
+def create_ngrams(img, length=4, text_json=None):
+    words = extract_words(img, text_json=text_json)
     lines = divide_into_lines(words, height=img.size[1], width=img.size[0])
     tokens = [line[i:i + N] for line in lines for N in range(1, length + 1) for i in range(len(line) - N + 1)]
     ngrams = []

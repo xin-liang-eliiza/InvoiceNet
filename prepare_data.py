@@ -24,6 +24,7 @@ import argparse
 import pdf2image
 import simplejson
 from tqdm import tqdm
+import PIL
 
 from invoicenet import FIELDS, FIELD_TYPES
 from invoicenet.common import util
@@ -45,6 +46,10 @@ def main():
     os.makedirs(os.path.join(args.out_dir, 'val'), exist_ok=True)
 
     filenames = [os.path.abspath(f) for f in glob.glob(args.data_dir + "**/*.pdf", recursive=True)]
+    if len(filenames) < 1:
+        filenames = [os.path.abspath(f) for f in glob.glob(args.data_dir + "**/*.png", recursive=True)]
+        #text_json_filenames = [os.path.abspath(f) for f in glob.glob(args.data_dir + "**/*_text.json", recursive=True)]
+
 
     idx = int(len(filenames) * args.val_size)
     train_files = filenames[idx:]
@@ -59,13 +64,19 @@ def main():
 
         for filename in tqdm(filenames):
             try:
-                page = pdf2image.convert_from_path(filename)[0]
-                page.save(os.path.join(args.out_dir, phase, os.path.basename(filename)[:-3] + 'png'))
+                if filename.endswith(".pdf"):
+                    page = pdf2image.convert_from_path(filename)[0]
+                    page.save(os.path.join(args.out_dir, phase, os.path.basename(filename)[:-3] + 'png'))
+                    text_json = None
+                else:
+                    page = PIL.Image.open(filename)
+                    text_json_file = filename.replace(".png", "_text.json")
+                    text_json = simplejson.load(open(text_json_file))
 
                 height = page.size[1]
                 width = page.size[0]
 
-                ngrams = util.create_ngrams(page)
+                ngrams = util.create_ngrams(page, text_json=text_json)
                 for ngram in ngrams:
                     if "amount" in ngram["parses"]:
                         ngram["parses"]["amount"] = util.normalize(ngram["parses"]["amount"], key="amount")

@@ -240,12 +240,21 @@ class InvoiceData(Data):
                 print(doc_id + "%d/%d" % (exceptions, i))
                 exceptions += 1
 
-    def _process_pdf(self, path):
-        pixels = pdf2image.convert_from_path(path)[0]
+    def _process_pdf(self, path, text_json_file=None):
+        if path.endswith(".pdf"):
+            pixels = pdf2image.convert_from_path(path)[0]
+        else:
+            pixels = Image.open(path)
+
         height = pixels.size[1]
         width = pixels.size[0]
 
-        ngrams = util.create_ngrams(pixels)
+        if text_json_file:
+            text_json = json.load(open(text_json_file))
+        else:
+            text_json = None
+
+        ngrams = util.create_ngrams(pixels, text_json=None)
         for ngram in ngrams:
             if "amount" in ngram["parses"]:
                 ngram["parses"]["amount"] = util.normalize(ngram["parses"]["amount"], key="amount")
@@ -278,7 +287,10 @@ class InvoiceData(Data):
             exceptions = 0
             for idx, path in enumerate(paths):
                 try:
-                    yield self._process_pdf(path)
+                    text_json_file = None
+                    if path.endswith(".png"):
+                        text_json_file = path.replace(".png", "_text.json")
+                    yield self._process_pdf(path, text_json_file=text_json_file)
                 except:
                     print(path + " %d/%d" % (exceptions, idx))
                     exceptions += 1
