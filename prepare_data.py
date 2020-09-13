@@ -48,7 +48,7 @@ def main():
     filenames = [os.path.abspath(f) for f in glob.glob(args.data_dir + "**/*.pdf", recursive=True)]
     if len(filenames) < 1:
         filenames = [os.path.abspath(f) for f in glob.glob(args.data_dir + "**/*.png", recursive=True)]
-        #text_json_filenames = [os.path.abspath(f) for f in glob.glob(args.data_dir + "**/*_text.json", recursive=True)]
+        #text_json_filenames = [os.path.abspath(f) for f in glob.glob(args.data_dir + "**/*.text_json", recursive=True)]
 
 
     idx = int(len(filenames) * args.val_size)
@@ -70,7 +70,7 @@ def main():
                     text_json = None
                 else:
                     page = PIL.Image.open(filename)
-                    text_json_file = filename.replace(".png", "_text.json")
+                    text_json_file = filename.replace(".png", ".text_json")
                     text_json = simplejson.load(open(text_json_file))
 
                 height = page.size[1]

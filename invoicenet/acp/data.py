@@ -289,7 +289,7 @@ class InvoiceData(Data):
                 try:
                     text_json_file = None
                     if path.endswith(".png"):
-                        text_json_file = path.replace(".png", "_text.json")
+                        text_json_file = path.replace(".png", ".text_json")
                     yield self._process_pdf(path, text_json_file=text_json_file)
                 except:
                     print(path + " %d/%d" % (exceptions, idx))
