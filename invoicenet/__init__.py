@@ -35,3 +35,11 @@ FIELDS["invoice_date"] = FIELD_TYPES["date"]
 FIELDS["net_amount"] = FIELD_TYPES["amount"]
 FIELDS["tax_amount"] = FIELD_TYPES["amount"]
 FIELDS["total_amount"] = FIELD_TYPES["amount"]
+
+### Dental invoice
+FIELDS["provider_number"] = FIELD_TYPES["general"]
+FIELDS["service_date"] = FIELD_TYPES["date"]
+FIELDS["item_number"] = FIELD_TYPES["general"]
+FIELDS["item_fee"] = FIELD_TYPES["amount"]
+FIELDS["tooth_id"] = FIELD_TYPES["general"]
+
